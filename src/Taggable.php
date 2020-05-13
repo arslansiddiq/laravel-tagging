@@ -93,12 +93,12 @@ trait Taggable
      *
      * @param string|array $tagNames
      */
-    public function addTags($tagNames)
+    public function addTags($tagNames, $module = null)
     {
         $tagNames = TaggingUtility::makeTagArray($tagNames);
 
         foreach($tagNames as $tagName) {
-            $this->addSingleTag($tagName);
+            $this->addSingleTag($tagName, $module);
         }
     }
 
@@ -107,9 +107,9 @@ trait Taggable
      *
      * @param string|array $tagNames
      */
-    public function tag($tagNames)
+    public function tag($tagNames, $module = null)
     {
-        return $this->addTags($tagNames);
+        return $this->addTags($tagNames, $module);
     }
 
     /**
@@ -163,7 +163,7 @@ trait Taggable
      *
      * @param string|array $tagNames
      */
-    public function retag($tagNames)
+    public function retag($tagNames, $module = null)
     {
         $tagNames = TaggingUtility::makeTagArray($tagNames);
         $currentTagNames = $this->tagNames();
@@ -174,7 +174,7 @@ trait Taggable
         $this->untag($deletions);
 
         foreach($additions as $tagName) {
-            $this->addSingleTag($tagName);
+            $this->addSingleTag($tagName, $module);
         }
     }
 
@@ -249,7 +249,7 @@ trait Taggable
      *
      * @param string $tagName
      */
-    private function addSingleTag($tagName)
+    private function addSingleTag($tagName, $module = null)
     {
         $tagName = trim($tagName);
 
@@ -259,7 +259,12 @@ trait Taggable
 
         $tagSlug = TaggingUtility::normalize($tagName);
 
-        $previousCount = $this->tagged()->where('tag_slug', '=', $tagSlug)->take(1)->count();
+        // if module is given check module tag exist or not
+        if($module){
+            $previousCount = $this->tagged()->where('tag_slug', '=', $tagSlug)->take(1)->count();
+        }else{
+            $previousCount = $this->tagged()->where('tag_slug', '=', $tagSlug)->take(1)->count();
+        }
         if($previousCount >= 1) { return; }
 
         $model = TaggingUtility::taggedModelString();
@@ -271,7 +276,7 @@ trait Taggable
 
         $this->tagged()->save($tagged);
 
-        TaggingUtility::incrementCount($tagName, $tagSlug, 1);
+        TaggingUtility::incrementCount($tagName, $tagSlug, 1, $module);
 
         unset($this->relations['tagged']);
 

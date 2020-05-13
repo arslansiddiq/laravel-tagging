@@ -199,18 +199,22 @@ class TaggingUtility
      * @param string $tagSlug
      * @param integer $count
      */
-    public static function incrementCount($tagString, $tagSlug, $count)
+    public static function incrementCount($tagString, $tagSlug, $count, $module = null)
     {
         if($count <= 0) { return; }
         $model = static::tagModelString();
-
-        $tag = $model::where('slug', '=', $tagSlug)->first();
+        if($module){
+            $tag = $model::where('slug', '=', $tagSlug)->where('module',$module)->first();
+        }else{
+            $tag = $model::where('slug', '=', $tagSlug)->first();
+        }
 
         if(!$tag) {
             $tag = new $model;
             $tag->name = $tagString;
             $tag->slug = $tagSlug;
             $tag->suggest = false;
+            $tag->module = $module;
             $tag->save();
         }
 
@@ -224,12 +228,16 @@ class TaggingUtility
      *
      * @param string $tagString
      */
-    public static function decrementCount($tagString, $tagSlug, $count)
+    public static function decrementCount($tagString, $tagSlug, $count, $module = null)
     {
         if($count <= 0) { return; }
         $model = static::tagModelString();
 
-        $tag = $model::where('slug', '=', $tagSlug)->first();
+        if($module){
+            $tag = $model::where('slug', '=', $tagSlug)->where('module',$module)->first();
+        }else{
+            $tag = $model::where('slug', '=', $tagSlug)->first();
+        }
 
         if($tag) {
             $tag->count = $tag->count - $count;
